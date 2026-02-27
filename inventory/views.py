@@ -4,7 +4,9 @@ from .forms import ItemForm, TransactionForm
 from django.db.models import Q
 from django.db.models import Sum, F
 from django.core.paginator import Paginator
-from django.contrib import messages  # <-- 1. Tambahkan Import Ini
+from django.contrib import messages 
+from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_date
 
 # --- LIST & SEARCH ---
 def item_list(request):
@@ -102,3 +104,37 @@ def add_transaction(request, item_id):
             return redirect('item_list')
     
     return redirect('item_list')
+
+@login_required # Hanya yang login yang bisa akses fungsi ini
+def add_transaction(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.item = item
+            transaction.user = request.user # TANGKAP USER DISINI
+            
+            # ... logika update stok (IN/OUT) yang sudah kita buat sebelumnya ...
+            
+            transaction.save()
+            item.save()
+            messages.success(request, f"Transaksi untuk {item.name} berhasil ditambahkan!")
+            return redirect('item_list')
+        
+def transaction_history(request):
+    transactions = Transaction.objects.all().order_by('-timestamp')
+    
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date:
+        transactions = transactions.filter(timestamp__date__gte=start_date)
+    if end_date:
+        transactions = transactions.filter(timestamp__date__lte=end_date)
+
+    return render(request, 'inventory/transaction_history.html', {
+        'transactions': transactions,
+        'start_date': start_date,
+        'end_date': end_date
+    })

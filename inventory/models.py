@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Category(models.Model):
@@ -37,3 +38,14 @@ class Transaction(models.Model):
 
     def __str__(self):
         return f"{self.transaction_type} - {self.item.name} ({self.quantity})"
+
+class Transaction(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    transaction_type = models.CharField(max_length=10, choices=[('IN', 'Stock In'), ('OUT', 'Stock Out')])
+    timestamp = models.DateTimeField(auto_now_add=True)
+    # Tambahkan ini:
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"{self.user.username if self.user else 'System'} - {self.item.name}"
