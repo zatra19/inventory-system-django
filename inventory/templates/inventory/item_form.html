@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-8 col-lg-5">
+
+        <div class="card border-0 shadow-lg rounded-4">
+            <div class="card-body p-5">
+
+                <h3 class="fw-bold text-center mb-2">
+                    {{ form.instance.pk|yesno:"Edit Barang,Tambah Barang" }}
+                </h3>
+                <p class="text-muted text-center mb-4">
+                    Kelola data inventory dengan rapi dan akurat
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="form-floating mb-3">
+                        {{ form.name }}
+                        <label>Nama Barang</label>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        {{ form.code }}
+                        <label>Kode Barang</label>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Kategori</label>
+                        {{ form.category }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Supplier</label>
+                        {{ form.supplier }}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Stok</label>
+                            {{ form.stock }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Harga</label>
+                            {{ form.price }}
+                            <div id="harga-helper" class="form-text text-success fw-bold mt-1" style="min-height: 20px;"></div>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-success btn-lg rounded-3">
+                            Simpan Perubahan
+                        </button>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'item_list' %}" class="text-decoration-none text-muted">
+                            ← Kembali ke daftar
+                        </a>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Django secara default memberi id 'id_price' untuk field bernama price
+    const priceInput = document.getElementById('id_price');
+    const helperText = document.getElementById('harga-helper');
+
+    if (priceInput) {
+        priceInput.addEventListener('input', function() {
+            // Hilangkan karakter non-digit
+            let value = this.value.replace(/\D/g, '');
+            this.value = value;
+            
+            // Format ke Rupiah di teks pembantu (helper)
+            if (value) {
+                helperText.textContent = `Terbaca: Rp ${parseInt(value).toLocaleString('id-ID')}`;
+            } else {
+                helperText.textContent = '';
+            }
+        });
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Hapus Barang</h2>
+<p>Yakin ingin menghapus item <strong>{{ item.name }}</strong>?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Ya, Hapus</button>
+    <a href="{% url 'item_list' %}" class="btn btn-secondary">Batal</a>
+</form>
+{% endblock %}

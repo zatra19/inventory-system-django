@@ -1,0 +1,111 @@
+[
+  {
+    "model": "inventory.category",
+    "pk": 1,
+    "fields": {
+      "name": "Elektronik"
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 2,
+    "fields": {
+      "name": "Aksesoris"
+    }
+  },
+  {
+    "model": "inventory.category",
+    "pk": 3,
+    "fields": {
+      "name": "ATK"
+    }
+  },
+
+  {
+    "model": "inventory.supplier",
+    "pk": 1,
+    "fields": {
+      "name": "PT Sumber Jaya"
+    }
+  },
+  {
+    "model": "inventory.supplier",
+    "pk": 2,
+    "fields": {
+      "name": "PT Maju Jaya"
+    }
+  },
+  {
+    "model": "inventory.supplier",
+    "pk": 3,
+    "fields": {
+      "name": "CV Sejahtera"
+    }
+  },
+
+  {
+    "model": "inventory.item",
+    "pk": 1,
+    "fields": {
+      "name": "Laptop ASUS VivoBook",
+      "code": "LAP001",
+      "category": 1,
+      "supplier": 1,
+      "stock": 10,
+      "price": 8500000,
+      "created_at": "2026-02-16T10:00:00Z"
+    }
+  },
+  {
+    "model": "inventory.item",
+    "pk": 2,
+    "fields": {
+      "name": "Mouse Logitech M185",
+      "code": "ACC001",
+      "category": 2,
+      "supplier": 2,
+      "stock": 50,
+      "price": 120000,
+      "created_at": "2026-02-16T10:00:00Z"
+    }
+  },
+  {
+    "model": "inventory.item",
+    "pk": 3,
+    "fields": {
+      "name": "Printer Epson L3210",
+      "code": "PRN001",
+      "category": 1,
+      "supplier": 1,
+      "stock": 8,
+      "price": 2750000,
+      "created_at": "2026-02-16T10:00:00Z"
+    }
+  },
+  {
+    "model": "inventory.item",
+    "pk": 4,
+    "fields": {
+      "name": "Kertas A4 80gsm",
+      "code": "ATK001",
+      "category": 3,
+      "supplier": 3,
+      "stock": 200,
+      "price": 55000,
+      "created_at": "2026-02-16T10:00:00Z"
+    }
+  },
+  {
+    "model": "inventory.item",
+    "pk": 5,
+    "fields": {
+      "name": "Flashdisk 32GB Sandisk",
+      "code": "ACC002",
+      "category": 2,
+      "supplier": 2,
+      "stock": 75,
+      "price": 95000,
+      "created_at": "2026-02-16T10:00:00Z"
+    }
+  }
+]
