@@ -98,26 +98,55 @@
                             </span>
                         {% else %}
                             <span class="badge bg-success p-2">
-                                <i class="bi bi-check-circle-fill"></i> {{ item.stock }}</span>
+                                <i class="bi bi-check-circle-fill"></i> {{ item.stock }}
+                            </span>
                         {% endif %}
                     </td>
-                    <td>Rp {{ item.price | floatformat:0 | intcomma }}</td>
+                    <td>Rp {{ item.price|floatformat:0|intcomma }}</td>
+                    
                     <td class="text-end">
-                        <a href="{% url 'item_update' item.pk %}"
-                           class="btn btn-sm btn-outline-warning rounded-3">
-                            Edit
-                        </a>
-                        <a href="{% url 'item_delete' item.pk %}"
-                           class="btn btn-sm btn-outline-danger rounded-3">
-                            Delete
-                        </a>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    data-bs-toggle="modal" data-bs-target="#modalTransaksi{{ item.id }}">
+                                <i class="bi bi-arrow-left-right"></i> Mutasi
+                            </button>
+                            
+                            <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            
+                            <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
+
+                <div class="modal fade" id="modalTransaksi{{ item.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <form action="{% url 'add_transaction' item.id %}" method="post">
+                                {% csrf_token %}
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Mutasi Stok: {{ item.name }}</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body text-start">
+                                    <p class="mb-3">Stok saat ini: <span class="badge bg-secondary">{{ item.stock }}</span></p>
+                                    {{ transaction_form.as_p }}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                    <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center text-muted">
-                        Belum ada data
-                    </td>
+                    <td colspan="7" class="text-center text-muted py-4">Belum ada data barang.</td>
                 </tr>
                 {% endfor %}
             </tbody>

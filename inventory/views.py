@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from .models import Item
-from .forms import ItemForm
+from .models import Item, Transaction
+from .forms import ItemForm, TransactionForm
 from django.db.models import Q
 from django.db.models import Sum, F
 from django.core.paginator import Paginator
@@ -35,6 +35,7 @@ def item_list(request):
         'total_items': total_items,
         'total_stock': stats['total_stock'] or 0,
         'total_value': stats['total_value'] or 0,
+        'transaction_form': TransactionForm(),  # Form untuk transaksi
     })
 
 # --- CREATE ---
@@ -74,3 +75,30 @@ def item_delete(request, pk):
         messages.warning(request, f"Barang '{nama_barang}' telah dihapus dari sistem.")
         return redirect('item_list')
     return render(request, 'inventory/item_confirm_delete.html', {'item': item})
+
+# --- TRANSACTION ---
+def add_transaction(request, item_id):
+    item = get_object_or_404(Item, id=item_id)
+    
+    if request.method == 'POST':
+        form = TransactionForm(request.POST)
+        if form.is_valid():
+            transaction = form.save(commit=False)
+            transaction.item = item
+            
+            # Ganti 'transaction.type' menjadi 'transaction.transaction_type'
+            if transaction.transaction_type == 'IN':
+                item.stock += transaction.quantity
+            elif transaction.transaction_type == 'OUT':
+                if item.stock >= transaction.quantity:
+                    item.stock -= transaction.quantity
+                else:
+                    messages.error(request, f"Stok tidak cukup untuk {item.name}!")
+                    return redirect('item_list')
+            
+            item.save()
+            transaction.save()
+            messages.success(request, f"Stok {item.name} berhasil diperbarui!")
+            return redirect('item_list')
+    
+    return redirect('item_list')

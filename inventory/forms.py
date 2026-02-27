@@ -1,5 +1,5 @@
 from django import forms
-from .models import Item, Category, Supplier
+from .models import Item, Category, Supplier, Transaction
 
 class ItemForm(forms.ModelForm):
     category = forms.ModelChoiceField(
@@ -21,4 +21,20 @@ class ItemForm(forms.ModelForm):
             'code': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter item code'}),
             'stock': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter stock'}),
             'price': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Enter price'}),
+        }
+
+class TransactionForm(forms.ModelForm):
+    class Meta:
+        model = Transaction
+        # Kita hanya butuh input tipe dan jumlah dari user
+        fields = ['transaction_type', 'quantity']
+        widgets = {
+            'transaction_type': forms.Select(attrs={
+                'class': 'form-select',
+            }),
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Masukkan jumlah...',
+                'min': '1' # Mencegah input angka negatif atau nol
+            }),
         }

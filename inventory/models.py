@@ -28,3 +28,12 @@ class Item(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.code})"
+
+class Transaction(models.Model):
+    item = models.ForeignKey(Item, on_delete=models.CASCADE)
+    quantity = models.IntegerField()
+    transaction_type = models.CharField(max_length=10, choices=[('IN', 'Stock In'), ('OUT', 'Stock Out')])
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.transaction_type} - {self.item.name} ({self.quantity})"
