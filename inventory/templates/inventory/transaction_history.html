@@ -38,6 +38,22 @@
                                 </form>
                             </div>
                         </div>
+                        <div class="col-md-12 text-end mt-2">
+                            <button onclick="window.print()" class="btn btn-success">
+                                <i class="bi bi-printer"></i> Cetak Laporan (PDF)
+                            </button>
+                            <a href="{% url 'export_transactions_csv' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}" 
+                            class="btn btn-success">
+                                <i class="bi bi-file-earmark-excel"></i> Export Excel (CSV)
+                            </a>
+                        </div>
+
+                        <div class="print-only text-center mb-4">
+                            <h3>LAPORAN MUTASI STOK GUDANG</h3>
+                            <p>Periode: {{ start_date|default:"Awal" }} s/d {{ end_date|default:"Sekarang" }}</p>
+                            <hr>
+                        </div>
+
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>

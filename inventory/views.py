@@ -138,3 +138,39 @@ def transaction_history(request):
         'start_date': start_date,
         'end_date': end_date
     })
+
+def export_transactions_csv(request):
+    import csv # Pastikan sudah di-import
+    from django.http import HttpResponse
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="laporan_mutasi.csv"'
+
+    writer = csv.writer(response)
+    # Header kolom
+    writer.writerow(['Waktu', 'Petugas', 'Barang', 'Tipe', 'Jumlah'])
+
+    # 1. Ambil semua data awal
+    transactions = Transaction.objects.all().order_by('-timestamp')
+    
+    # 2. Ambil parameter filter dari request.GET (Bukan dari objek transaksi!)
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    if start_date and start_date != "None" and start_date != "":
+        transactions = transactions.filter(timestamp__date__gte=start_date)
+    
+    if end_date and end_date != "None" and end_date != "":
+        transactions = transactions.filter(timestamp__date__lte=end_date)
+
+    # 3. Looping data transaksi
+    for t in transactions:
+        writer.writerow([
+            t.timestamp.strftime('%Y-%m-%d %H:%M'),
+            t.user.username if t.user else 'System', # Ambil username petugas
+            t.item.name, # Nama barang
+            t.get_transaction_type_display(), # 'Stock In' atau 'Stock Out'
+            t.quantity # Jumlahnya
+        ])
+
+    return response

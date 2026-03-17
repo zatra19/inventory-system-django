@@ -8,5 +8,6 @@ urlpatterns = [
     path('delete/<int:pk>/', views.item_delete, name='item_delete'),
     path('transaction/add/<int:item_id>/', views.add_transaction, name='add_transaction'),
     path('transactions/', views.transaction_history, name='transaction_history'),
+    path('export/csv/', views.export_transactions_csv, name='export_transactions_csv'),
 ]
 
