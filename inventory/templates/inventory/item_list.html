@@ -1,201 +1,262 @@
 {% extends 'base.html' %}
 {% load humanize %}
-{% block content %}
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+{% block title %}Inventory Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    html {
+        scroll-behavior: smooth;
+    }
+    /* Mencegah tabrakan dengan navbar saat melompat ke ID */
+    #inventory-table-container {
+        scroll-margin-top: 100px;
+    }
+    .page-link {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
     <div>
         <h2 class="fw-bold mb-0">Inventory Dashboard</h2>
-        <p class="text-muted mb-0">Kelola dan pantau stok barang</p>
+        <p class="text-muted mb-0">Kelola dan pantau stok barang secara real-time</p>
     </div>
-
-    <a href="{% url 'item_create' %}" class="btn btn-primary rounded-3 px-4">
-        + Tambah Barang
+    <a href="{% url 'item_create' %}" class="btn btn-primary rounded-3 px-4 shadow-sm">
+        <i class="bi bi-plus-lg"></i> Tambah Barang
     </a>
 </div>
 
-<!-- STATISTIC CARD -->
 <div class="row g-3 mb-4">
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-primary text-white">
+        <div class="card border-0 shadow-sm bg-primary text-white h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase small fw-bold">Total Aset Inventory</h6>
-                <h2 class="mb-0">Rp {{ total_value|floatformat:0|intcomma }}</h2>
+                <h6 class="text-uppercase small fw-bold opacity-75">Total Aset Inventory</h6>
+                <h2 class="mb-0 fw-bold">Rp {{ total_value|floatformat:0|intcomma }}</h2>
+                <i class="bi bi-currency-dollar position-absolute top-50 end-0 translate-middle opacity-25 fs-1"></i>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-success text-white">
+        <div class="card border-0 shadow-sm bg-success text-white h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase small fw-bold">Total Barang</h6>
-                <h2 class="mb-0">{{ total_items|intcomma }} Item</h2>
+                <h6 class="text-uppercase small fw-bold opacity-75">Total Jenis Barang</h6>
+                <h2 class="mb-0 fw-bold">{{ total_items|intcomma }} Item</h2>
+                <i class="bi bi-box-seam position-absolute top-50 end-0 translate-middle opacity-25 fs-1"></i>
             </div>
         </div>
     </div>
     <div class="col-md-4">
-        <div class="card border-0 shadow-sm bg-dark text-white">
+        <div class="card border-0 shadow-sm bg-dark text-white h-100">
             <div class="card-body p-4">
-                <h6 class="text-uppercase small fw-bold">Total Stok Fisik</h6>
-                <h2 class="mb-0">{{ total_stock|intcomma }} Unit</h2>
+                <h6 class="text-uppercase small fw-bold opacity-75">Total Stok Fisik</h6>
+                <h2 class="mb-0 fw-bold">{{ total_stock|intcomma }} Unit</h2>
+                <i class="bi bi-stack position-absolute top-50 end-0 translate-middle opacity-25 fs-1"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- SEARCH -->
-<form method="get" class="mb-3">
-    <div class="input-group">
-        <input type="text"
-               name="q"
-               value="{{ query|default:'' }}"
-               class="form-control"
-               placeholder="Cari nama, kode, kategori, supplier...">
-        <button class="btn btn-outline-primary" type="submit">
-            Search
-        </button>
-    </div>
-</form>
-
-{% if messages %}
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endfor %}
-{% endif %}
-
-<!-- TABLE CARD -->
-<div class="card border-0 shadow-sm rounded-4">
-    <div class="card-body p-4">
-
-        <table class="table align-middle table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Nama</th>
-                    <th>Kode</th>
-                    <th>Kategori</th>
-                    <th>Supplier</th>
-                    <th>Stok</th>
-                    <th>Harga</th>
-                    <th class="text-end">Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in page_obj %}
-                <tr>
-                    <td class="fw-semibold">{{ item.name }}</td>
-                    <td>{{ item.code }}</td>
-                    <td>{{ item.category }}</td>
-                    <td>{{ item.supplier }}</td>
-                    <td>
-                        {% if item.stock <= 5 %}
-                            <span class="badge bg-danger p-2">
-                                <i class="bi bi-x-octagon-fill"></i> {{ item.stock }} (Kritis)
-                            </span>
-                        {% elif item.stock <= 15 %}
-                            <span class="badge bg-warning text-dark p-2">
-                                <i class="bi bi-exclamation-triangle"></i> {{ item.stock }} (Menipis)
-                            </span>
-                        {% else %}
-                            <span class="badge bg-success p-2">
-                                <i class="bi bi-check-circle-fill"></i> {{ item.stock }}
-                            </span>
-                        {% endif %}
-                    </td>
-                    <td>Rp {{ item.price|floatformat:0|intcomma }}</td>
-                    
-                    <td class="text-end">
-                        <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-sm btn-outline-primary" 
-                                    data-bs-toggle="modal" data-bs-target="#modalTransaksi{{ item.id }}">
-                                <i class="bi bi-arrow-left-right"></i> Mutasi
-                            </button>
-                            
-                            <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-outline-warning">
-                                <i class="bi bi-pencil"></i> Edit
-                            </a>
-                            
-                            <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-outline-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-
-                <div class="modal fade" id="modalTransaksi{{ item.id }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <form action="{% url 'add_transaction' item.id %}" method="post">
-                                {% csrf_token %}
-                                <div class="modal-header">
-                                    <h5 class="modal-title">Mutasi Stok: {{ item.name }}</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body text-start">
-                                    <p class="mb-3">Stok saat ini: <span class="badge bg-secondary">{{ item.stock }}</span></p>
-                                    {{ transaction_form.as_p }}
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                    <button type="submit" class="btn btn-primary">Simpan Transaksi</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+<div class="row mb-4 no-print">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Tren Mutasi Stok</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="inventoryChart"></canvas>
                 </div>
-
-                {% empty %}
-                <tr>
-                    <td colspan="7" class="text-center text-muted py-4">Belum ada data barang.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-
-        <!-- PAGINATION -->
-        <nav class="mt-4">
-            <ul class="pagination justify-content-center">
-
-                {% if page_obj.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?q={{ query }}&page=1">
-                            First
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?q={{ query }}&page={{ page_obj.previous_page_number }}">
-                            Previous
-                        </a>
-                    </li>
-                {% endif %}
-
-                <li class="page-item active">
-                    <span class="page-link">
-                        {{ page_obj.number }}
-                    </span>
-                </li>
-
-                {% if page_obj.has_next %}
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?q={{ query }}&page={{ page_obj.next_page_number }}">
-                            Next
-                        </a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link"
-                           href="?q={{ query }}&page={{ page_obj.paginator.num_pages }}">
-                            Last
-                        </a>
-                    </li>
-                {% endif %}
-
-            </ul>
-        </nav>
-
+            </div>
+        </div>
     </div>
 </div>
 
+<div id="inventory-table-container">
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-4">
+            <form method="get" 
+                  hx-get="{% url 'item_list' %}" 
+                  hx-target="#inventory-table-container" 
+                  hx-select="#inventory-table-container" 
+                  hx-swap="outerHTML"
+                  hx-push-url="true"
+                  class="mb-4 no-print">
+                <div class="input-group shadow-sm">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ query|default:'' }}" 
+                           class="form-control border-start-0 ps-0" 
+                           placeholder="Cari nama, kode, kategori, supplier...">
+                    <button class="btn btn-primary px-4" type="submit">Cari</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Barang</th>
+                            <th>Kode</th>
+                            <th>Kategori</th>
+                            <th>Stok</th>
+                            <th>Harga</th>
+                            <th class="text-end no-print">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ item.name }}</div>
+                                <small class="text-muted">{{ item.supplier }}</small>
+                            </td>
+                            <td><code class="text-primary fw-bold">{{ item.code }}</code></td>
+                            <td><span class="badge bg-light text-dark border">{{ item.category }}</span></td>
+                            <td>
+                                {% if item.stock <= 5 %}
+                                    <span class="badge bg-danger shadow-sm"><i class="bi bi-exclamation-octagon"></i> {{ item.stock }} (Kritis)</span>
+                                {% elif item.stock <= 15 %}
+                                    <span class="badge bg-warning text-dark shadow-sm"><i class="bi bi-exclamation-triangle"></i> {{ item.stock }}</span>
+                                {% else %}
+                                    <span class="badge bg-success shadow-sm">{{ item.stock }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold">Rp {{ item.price|floatformat:0|intcomma }}</td>
+                            <td class="text-end no-print">
+                                <div class="btn-group shadow-sm border rounded">
+                                    <button type="button" class="btn btn-sm btn-white text-primary border-end" 
+                                            data-bs-toggle="modal" data-bs-target="#modalTransaksi{{ item.id }}">
+                                        <i class="bi bi-arrow-left-right"></i> Mutasi
+                                    </button>
+                                    <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-white text-warning border-end">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'item_delete' item.pk %}" class="btn btn-sm btn-white text-danger">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <div class="modal fade" id="modalTransaksi{{ item.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow">
+                                    <form action="{% url 'add_transaction' item.id %}" method="post">
+                                        {% csrf_token %}
+                                        <div class="modal-header border-0 pb-0">
+                                            <h5 class="fw-bold">Mutasi Stok: {{ item.name }}</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body py-4">
+                                            <div class="alert alert-info border-0 mb-3">
+                                                Stok saat ini: <strong>{{ item.stock }} Unit</strong>
+                                            </div>
+                                            {{ transaction_form.as_p }}
+                                        </div>
+                                        <div class="modal-footer border-0 pt-0">
+                                            <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                                            <button type="submit" class="btn btn-primary px-4">Simpan Transaksi</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                                Belum ada data barang.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if page_obj.has_other_pages %}
+            <nav class="mt-4 no-print">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link shadow-sm mx-1 rounded text-dark" 
+                               hx-get="?q={{ query }}&page=1"
+                               hx-target="#inventory-table-container"
+                               hx-select="#inventory-table-container"
+                               hx-swap="outerHTML"
+                               hx-push-url="true">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link shadow-sm mx-1 rounded text-dark" 
+                               hx-get="?q={{ query }}&page={{ page_obj.previous_page_number }}"
+                               hx-target="#inventory-table-container"
+                               hx-select="#inventory-table-container"
+                               hx-swap="outerHTML"
+                               hx-push-url="true">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    <li class="page-item active"><span class="page-link shadow mx-1 rounded bg-primary border-0">{{ page_obj.number }}</span></li>
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link shadow-sm mx-1 rounded text-dark" 
+                               hx-get="?q={{ query }}&page={{ page_obj.next_page_number }}"
+                               hx-target="#inventory-table-container"
+                               hx-select="#inventory-table-container"
+                               hx-swap="outerHTML"
+                               hx-push-url="true">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link shadow-sm mx-1 rounded text-dark" 
+                               hx-get="?q={{ query }}&page={{ page_obj.paginator.num_pages }}"
+                               hx-target="#inventory-table-container"
+                               hx-select="#inventory-table-container"
+                               hx-swap="outerHTML"
+                               hx-push-url="true">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    function renderChart() {
+        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        fetch("{% url 'api_inventory_chart' %}")
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
+                            x: { grid: { display: false } }
+                        }
+                    }
+                });
+            });
+    }
+
+    // Render pertama kali
+    document.addEventListener('DOMContentLoaded', renderChart);
+
+    // Re-render chart jika diperlukan setelah swap HTMX (opsional jika target hanya tabel)
+    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+        if (evt.detail.target.id === 'inventory-table-container') {
+            // Jika ada elemen di dalam tabel yang butuh JS ulang, taruh di sini
+        }
+    });
+</script>
 {% endblock %}

@@ -1,119 +1,146 @@
 {% extends 'base.html' %}
 
+{% block title %}Riwayat Mutasi - Inventory{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold text-dark">
-                <i class="bi bi-clock-history text-primary"></i> Riwayat Mutasi Stok
-            </h2>
-            <p class="text-muted">Daftar seluruh aktivitas masuk dan keluar barang.</p>
-        </div>
+<div class="d-flex justify-content-between align-items-center mb-4 no-print">
+    <div>
+        <h2 class="fw-bold text-dark mb-0">
+            <i class="bi bi-clock-history text-primary"></i> Riwayat Mutasi Stok
+        </h2>
+        <p class="text-muted">Pantau seluruh aktivitas keluar masuk barang.</p>
+    </div>
+    <div class="d-flex gap-2">
         <a href="{% url 'item_list' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Kembali ke Dashboard
+            <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
+</div>
 
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <div class="card shadow-sm border-0 mb-4">
-                            <div class="card-body">
-                                <form method="get" class="row g-3 align-items-end">
-                                    <div class="col-md-4">
-                                        <label class="form-label small fw-bold">Dari Tanggal</label>
-                                        <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <label class="form-label small fw-bold">Sampai Tanggal</label>
-                                        <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
-                                    </div>
-                                    <div class="col-md-4">
-                                        <button type="submit" class="btn btn-primary w-100">
-                                            <i class="bi bi-filter"></i> Filter
-                                        </button>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-                        <div class="col-md-12 text-end mt-2">
-                            <button onclick="window.print()" class="btn btn-success">
-                                <i class="bi bi-printer"></i> Cetak Laporan (PDF)
-                            </button>
-                            <a href="{% url 'export_transactions_csv' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}" 
-                            class="btn btn-success">
-                                <i class="bi bi-file-earmark-excel"></i> Export Excel (CSV)
-                            </a>
-                        </div>
-
-                        <div class="print-only text-center mb-4">
-                            <h3>LAPORAN MUTASI STOK GUDANG</h3>
-                            <p>Periode: {{ start_date|default:"Awal" }} s/d {{ end_date|default:"Sekarang" }}</p>
-                            <hr>
-                        </div>
-
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th class="ps-4">Waktu</th>
-                                    <th>Petugas</th>
-                                    <th>Barang</th>
-                                    <th class="text-center">Tipe</th>
-                                    <th class="text-end pe-4">Jumlah</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for t in transactions %}
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="small fw-bold">{{ t.timestamp|date:"d M Y" }}</div>
-                                        <div class="small text-muted">{{ t.timestamp|date:"H:i" }} WIB</div>
-                                    </td>
-                                    <td>
-                                        <div class="d-flex align-items-center">
-                                            <div class="bg-light rounded-circle p-2 me-2">
-                                                <i class="bi bi-person text-secondary"></i>
-                                            </div>
-                                            <span class="small fw-semibold">{{ t.user.username|default:"System" }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-light text-dark border">{{ t.item.code }}</span>
-                                        <span class="ms-1">{{ t.item.name }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        {% if t.transaction_type == 'IN' %}
-                                            <span class="badge rounded-pill bg-success-subtle text-success border border-success">
-                                                <i class="bi bi-arrow-down-left"></i> Masuk
-                                            </span>
-                                        {% else %}
-                                            <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger">
-                                                <i class="bi bi-arrow-up-right"></i> Keluar
-                                            </span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <span class="fw-bold {% if t.transaction_type == 'IN' %}text-success{% else %}text-danger{% endif %}">
-                                            {% if t.transaction_type == 'IN' %}+{% else %}-{% endif %}{{ t.quantity }}
-                                        </span>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">
-                                        <i class="bi bi-inbox display-4 d-block mb-2"></i>
-                                        Belum ada riwayat transaksi.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+<div class="card shadow-sm border-0 mb-4 no-print">
+    <div class="card-body p-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-uppercase">Dari Tanggal</label>
+                <input type="date" name="start_date" class="form-control" value="{{ start_date }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-bold text-uppercase">Sampai Tanggal</label>
+                <input type="date" name="end_date" class="form-control" value="{{ end_date }}">
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="d-flex gap-2 justify-content-md-end">
+                    <button type="submit" class="btn btn-primary px-4">
+                        <i class="bi bi-filter"></i> Filter
+                    </button>
+                    <a href="{% url 'export_transactions_csv' %}?start_date={{ start_date|default:'' }}&end_date={{ end_date|default:'' }}" 
+                       class="btn btn-success px-4">
+                        <i class="bi bi-file-earmark-excel"></i> CSV
+                    </a>
+                    <button onclick="window.print()" class="btn btn-dark px-4">
+                        <i class="bi bi-printer"></i> Cetak
+                    </button>
                 </div>
             </div>
+        </form>
+    </div>
+</div>
+
+<div class="print-only text-center mb-4">
+    <h2 class="fw-bold">LAPORAN MUTASI STOK GUDANG</h2>
+    <p class="mb-0">Periode: {{ start_date|default:"Awal" }} s/d {{ end_date|default:"Sekarang" }}</p>
+    <p class="small text-muted">Dicetak pada: {% now "d F Y H:i" %}</p>
+    <hr border="2">
+</div>
+
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-uppercase small fw-bold">
+                        <th class="ps-4 py-3">Waktu</th>
+                        <th class="py-3">Petugas</th>
+                        <th class="py-3">Barang</th>
+                        <th class="py-3 text-center">Tipe</th>
+                        <th class="py-3 text-end pe-4">Jumlah</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in page_obj %} <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ t.timestamp|date:"d M Y" }}</div>
+                            <div class="small text-muted">{{ t.timestamp|date:"H:i" }} WIB</div>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-light rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="bi bi-person text-secondary"></i>
+                                </div>
+                                <span class="fw-semibold">{{ t.user.username|default:"System" }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-primary border border-primary-subtle me-1">{{ t.item.code }}</span>
+                            <span class="fw-bold text-dark">{{ t.item.name }}</span>
+                        </td>
+                        <td class="text-center">
+                            {% if t.transaction_type == 'IN' %}
+                                <span class="badge rounded-pill bg-success-subtle text-success border border-success px-3">
+                                    <i class="bi bi-arrow-down-left"></i> Masuk
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-pill bg-danger-subtle text-danger border border-danger px-3">
+                                    <i class="bi bi-arrow-up-right"></i> Keluar
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <span class="fs-6 fw-bold {% if t.transaction_type == 'IN' %}text-success{% else %}text-danger{% endif %}">
+                                {% if t.transaction_type == 'IN' %}+{% else %}-{% endif %}{{ t.quantity }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <div class="text-muted">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                                Belum ada riwayat transaksi ditemukan.
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+{% if page_obj.has_other_pages %}
+<nav class="mt-4 no-print">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link border-0 shadow-sm mx-1 rounded" href="?q={{ query }}&page={{ page_obj.previous_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            </li>
+        {% endif %}
+
+        <li class="page-item active">
+            <span class="page-link border-0 shadow-sm mx-1 rounded bg-primary">{{ page_obj.number }}</span>
+        </li>
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link border-0 shadow-sm mx-1 rounded" href="?q={{ query }}&page={{ page_obj.next_page_number }}&start_date={{ start_date }}&end_date={{ end_date }}">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
 {% endblock %}

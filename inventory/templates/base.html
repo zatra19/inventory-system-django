@@ -1,62 +1,94 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Inventory System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>{% block title %}Inventory System{% endblock %}</title>
+    
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    
     <style>
-    @media print {
-        /* Sembunyikan Navbar, Tombol Filter, dan tombol kembali saat cetak */
-        .navbar, .btn, .card-body form, .no-print {
-            display: none !important;
+        /* Gaya Global */
+        html { scroll-behavior: smooth; }
+        body { background-color: #f8f9fa; }
+        
+        /* CSS Cetak Anda */
+        @media print {
+            .navbar, .btn, .card-body form, .no-print, .pagination {
+                display: none !important;
+            }
+            .card { border: none !important; box-shadow: none !important; }
+            .print-only { display: block !important; }
         }
-        /* Hilangkan bayangan card dan border agar bersih di kertas */
-        .card {
-            border: none !important;
-            shadow: none !important;
-        }
-        /* Tambahkan judul laporan jika diperlukan */
-        .print-only {
-            display: block !important;
-        }
-    }
-    .print-only {
-        display: none;
-    }
-</style>
+        .print-only { display: none; }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm no-print">
     <div class="container">
         <a class="navbar-brand fw-bold" href="{% url 'item_list' %}">📦 INVENTORY</a>
         
-        {% if user.is_authenticated %}
-        <div class="navbar-nav me-auto">
-            <a class="nav-link" href="{% url 'item_list' %}">Dashboard</a>
-            <a class="nav-link" href="{% url 'transaction_history' %}">Riwayat</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            {% if user.is_authenticated %}
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'item_list' %}active{% endif %}" href="{% url 'item_list' %}">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'transaction_history' %}active{% endif %}" href="{% url 'transaction_history' %}">Riwayat</a>
+                </li>
+            </ul>
+            
+            <div class="navbar-nav ms-auto align-items-center">
+                <span class="nav-item nav-link text-light me-3">
+                    <i class="bi bi-person-circle"></i> {{ user.username }}
+                </span>
+                <form action="{% url 'logout' %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm">Keluar</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="navbar-nav ms-auto">
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Masuk</a>
+            </div>
+            {% endif %}
         </div>
-        <div class="navbar-nav">
-            <span class="nav-item nav-link text-light me-3">
-                <i class="bi bi-person-circle"></i> {{ user.username }}
-            </span>
-            <form action="{% url 'logout' %}" method="post" class="d-inline">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-outline-danger btn-sm">Keluar</button>
-            </form>
-        </div>
-        {% endif %}
     </div>
 </nav>
 
 <div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     {% block content %}
     {% endblock %}
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+{% block scripts %}
+{% endblock %}
 
 </body>
 </html>

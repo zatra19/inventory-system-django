@@ -10,26 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# 1. PATHS CONFIGURATION
+# BASE_DIR adalah folder utama proyek Anda
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# 2. SECURITY SETTINGS
 SECRET_KEY = 'django-insecure-0gmoj+jig(nhtcols6##1br4*q8jhufpl+_dw1#qd+)#1*04qg'
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 ALLOWED_HOSTS = []
 
-
-# Application definition
-
+# 3. APPLICATION DEFINITION
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -37,8 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.humanize',  # <-- Tambahkan Ini
-    'inventory',
+    'django.contrib.humanize', # Untuk format Rp dan ribuan
+    'rest_framework',          # Untuk API Dashboard Grafik
+    'inventory',               # App utama Anda
 ]
 
 MIDDLEWARE = [
@@ -56,10 +50,12 @@ ROOT_URLCONF = 'config.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        # DIRS diisi agar Django bisa membaca base.html di folder templates utama
+        'DIRS': [BASE_DIR / 'templates'], 
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -70,10 +66,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
+# 4. DATABASE
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -81,52 +74,30 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
-
+# 5. PASSWORD VALIDATION
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+# 6. INTERNATIONALIZATION (Optimasi untuk Indonesia)
+LANGUAGE_CODE = 'id'            # Menggunakan format tanggal/angka Indonesia
+TIME_ZONE = 'Asia/Jakarta'      # Agar riwayat mutasi stok tepat sesuai WIB
 USE_I18N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
+# 7. STATIC FILES (Optimasi Path)
 STATIC_URL = 'static/'
-
-# Folder tempat kamu menaruh file (yang sedang kita gunakan sekarang)
-import os
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
+    BASE_DIR / 'static',
 ]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Tambahkan baris ini! (Ini adalah alamat tujuan untuk collectstatic)
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-#LOGIN
+# 8. AUTHENTICATION URLS
 LOGIN_REDIRECT_URL = 'item_list'
 LOGOUT_REDIRECT_URL = 'login'
+
+# 9. DEFAULT AUTO FIELD
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
