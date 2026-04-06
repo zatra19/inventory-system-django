@@ -24,7 +24,7 @@ Sistem manajemen inventaris berbasis web yang dirancang untuk memudahkan pelacak
 
 ### 1. Clone Repository
 ```bash
-git clone [https://github.com/USERNAME/inventory-system-django.git](https://github.com/USERNAME/inventory-system-django.git)
+git clone [https://github.com/zatra19/inventory-system-django.git](https://github.com/zatra19/inventory-system-django.git)
 cd inventory-system-django
 ```
 
@@ -63,7 +63,7 @@ python manage.py runserver
 Buka browser dan akses aplikasi di: http://127.0.0.1:8000
 
 📊 Rencana Pengembangan (Roadmap)
-* [ ] Dashboard Grafik: Integrasi Chart.js untuk visualisasi tren stok.
+* [✅] Dashboard Grafik: Integrasi Chart.js untuk visualisasi tren stok.
 
 * [ ] Notifikasi: Pengiriman email otomatis saat stok mencapai batas kritis.
 
