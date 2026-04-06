@@ -24,7 +24,7 @@ Sistem manajemen inventaris berbasis web yang dirancang untuk memudahkan pelacak
 
 ### 1. Clone Repository
 ```bash
-git clone [https://github.com/zatra19/inventory-system-django.git](https://github.com/zatra19/inventory-system-django.git)
+git clone https://github.com/zatra19/inventory-system-django.git
 cd inventory-system-django
 ```
 
