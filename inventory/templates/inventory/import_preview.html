@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Preview Import Excel{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm rounded-4">
+  <div class="card-body p-4">
+    <h4 class="fw-bold mb-3">Pratinjau Import Excel</h4>
+
+    {% if errors %}
+      <div class="alert alert-warning">Beberapa baris dilewati atau bermasalah:
+        <ul>
+          {% for e in errors %}
+            <li>{{ e }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="confirm_import" value="1">
+
+      <div class="table-responsive">
+        <table class="table table-sm">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Aksi</th>
+              <th>Kode</th>
+              <th>Nama</th>
+              <th>Old Stok</th>
+              <th>Mode</th>
+              <th>Stok (nilai)</th>
+              <th>New Stok</th>
+              <th>Delta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in preview %}
+            <tr>
+              <td>{{ row.row }}</td>
+              <td>{{ row.action|title }}</td>
+              <td>{{ row.code }}</td>
+              <td>{{ row.name }}</td>
+              <td>{{ row.old_stock }}</td>
+              <td>{{ row.stock_mode|title }}</td>
+              <td>{{ row.stock }}</td>
+              <td>{{ row.new_stock }}</td>
+              <td>{% if row.delta > 0 %}+{{ row.delta }}{% else %}{{ row.delta }}{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="d-flex gap-2 mt-3">
+        <a href="{% url 'item_list' %}" class="btn btn-light">Batal</a>
+        <button type="submit" class="btn btn-primary">Konfirmasi dan Terapkan Perubahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

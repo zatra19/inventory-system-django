@@ -99,12 +99,5 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 LOGIN_REDIRECT_URL = 'item_list'
 LOGOUT_REDIRECT_URL = 'login'
 
-# 9. EMAIL NOTIFICATIONS
-EMAIL_BACKEND = os.getenv('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'inventory@example.com')
-LOW_STOCK_EMAIL_RECIPIENTS = [
-    recipient.strip() for recipient in os.getenv('LOW_STOCK_EMAIL_RECIPIENTS', 'inventory@example.com').split(',') if recipient.strip()
-]
-
-# 10. DEFAULT AUTO FIELD
+# 9. DEFAULT AUTO FIELD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

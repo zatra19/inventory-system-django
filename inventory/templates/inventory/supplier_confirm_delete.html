@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Hapus Supplier - Inventory{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <h3 class="fw-bold mb-3">Hapus Supplier</h3>
+                <p>Yakin ingin menghapus supplier <strong>{{ supplier.name }}</strong>?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'supplier_list' %}" class="btn btn-outline-secondary">Batal</a>
+                        <button type="submit" class="btn btn-danger">Hapus</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

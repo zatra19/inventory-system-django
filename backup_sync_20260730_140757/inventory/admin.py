@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Supplier, Item, Transaction
+from .models import Category, Supplier, Item
 
 
 @admin.register(Category)
@@ -17,10 +17,3 @@ class ItemAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'code', 'category', 'supplier', 'stock', 'price')
     search_fields = ('name', 'code')
     list_filter = ('category', 'supplier')
-
-
-@admin.register(Transaction)
-class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'item', 'transaction_type', 'quantity', 'user', 'timestamp')
-    list_filter = ('transaction_type', 'timestamp')
-    search_fields = ('item__name', 'user__username')

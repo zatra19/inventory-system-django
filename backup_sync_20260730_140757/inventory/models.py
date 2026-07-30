@@ -16,32 +16,17 @@ class Supplier(models.Model):
         return self.name
 
 class Item(models.Model):
-    LOW_STOCK_THRESHOLD = 15
-
     name = models.CharField(max_length=200)
     code = models.CharField(max_length=50, unique=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     supplier = models.ForeignKey(Supplier, on_delete=models.CASCADE)
-    stock = models.PositiveIntegerField(default=0)
+    stock = models.IntegerField(default=0) # Nilai ini harus diupdate via Signal atau View
     price = models.DecimalField(max_digits=12, decimal_places=2)
-    low_stock_threshold = models.PositiveIntegerField(default=LOW_STOCK_THRESHOLD)
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
     def total_value(self):
         return self.stock * self.price
-
-    @property
-    def stock_status(self):
-        if self.stock <= 5:
-            return 'critical'
-        if self.stock <= self.low_stock_threshold:
-            return 'warning'
-        return 'normal'
-
-    @property
-    def is_low_stock(self):
-        return self.stock <= self.low_stock_threshold
 
     def __str__(self):
         return f"{self.name} ({self.code})"
@@ -53,7 +38,7 @@ class Transaction(models.Model):
     ]
     
     item = models.ForeignKey(Item, on_delete=models.CASCADE, related_name='transactions')
-    quantity = models.PositiveIntegerField()
+    quantity = models.IntegerField()
     transaction_type = models.CharField(max_length=10, choices=TRANSACTION_TYPES)
     timestamp = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)

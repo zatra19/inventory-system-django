@@ -51,12 +51,6 @@
                 <li class="nav-item">
                     <a class="nav-link {% if request.resolver_match.url_name == 'transaction_history' %}active{% endif %}" href="{% url 'transaction_history' %}">Riwayat</a>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}" href="{% url 'category_list' %}">Kategori</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'supplier_list' %}active{% endif %}" href="{% url 'supplier_list' %}">Supplier</a>
-                </li>
             </ul>
             
             <div class="navbar-nav ms-auto align-items-center">

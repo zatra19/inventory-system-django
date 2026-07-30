@@ -24,23 +24,9 @@
         <h2 class="fw-bold mb-0">Inventory Dashboard</h2>
         <p class="text-muted mb-0">Kelola dan pantau stok barang secara real-time</p>
     </div>
-    <div class="d-flex gap-2 flex-wrap">
-        {% if user_role == 'admin' %}
-        <form method="post" action="{% url 'import_items_excel' %}" enctype="multipart/form-data" class="d-flex gap-2 align-items-center">
-            {% csrf_token %}
-            <input type="file" name="excel_file" class="form-control form-control-sm" accept=".xlsx,.xls" required>
-            <button type="submit" class="btn btn-outline-secondary btn-sm">Import Excel</button>
-        </form>
-        <a href="{% url 'export_items_excel' %}" class="btn btn-outline-primary rounded-3 px-3 shadow-sm">
-            <i class="bi bi-download"></i> Export Excel
-        </a>
-        {% endif %}
-        {% if user_role == 'admin' %}
-        <a href="{% url 'item_create' %}" class="btn btn-primary rounded-3 px-4 shadow-sm">
-            <i class="bi bi-plus-lg"></i> Tambah Barang
-        </a>
-        {% endif %}
-    </div>
+    <a href="{% url 'item_create' %}" class="btn btn-primary rounded-3 px-4 shadow-sm">
+        <i class="bi bi-plus-lg"></i> Tambah Barang
+    </a>
 </div>
 
 <div class="row g-3 mb-4">
@@ -73,52 +59,30 @@
     </div>
 </div>
 
-{% if low_stock_count > 0 %}
-<div class="row g-3 mb-4 no-print">
-    <div class="col-12">
-        <div class="alert alert-warning border-0 shadow-sm rounded-4 d-flex justify-content-between align-items-center">
-            <div>
-                <h6 class="mb-1 fw-bold">Peringatan Stok Rendah</h6>
-                <p class="mb-0">Terdapat {{ low_stock_count }} barang yang mendekati ambang batas stok rendah.</p>
-            </div>
-            <a href="#inventory-table-container" class="btn btn-outline-warning">Lihat Sekarang</a>
-        </div>
-    </div>
-</div>
-
-<div class="row g-3 mb-4 no-print">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">Daftar Barang Stok Rendah</h5>
-                <div class="list-group list-group-flush">
-                    {% for low_item in low_stock_items %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center py-3 px-0 border-0">
-                        <div>
-                            <div class="fw-semibold">{{ low_item.name }}</div>
-                            <small class="text-muted">{{ low_item.code }} • {{ low_item.category.name }}</small>
-                        </div>
-                        <span class="badge {% if low_item.stock <= 5 %}bg-danger{% else %}bg-warning text-dark{% endif %}">{{ low_item.stock }}</span>
-                    </div>
-                    {% empty %}
-                    <div class="list-group-item border-0 py-3 px-0 text-muted">Tidak ada item stok rendah.</div>
-                    {% endfor %}
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
-
 <div class="row mb-4 no-print">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4">
+    <!-- Kolom Kiri: Tren Mutasi (Bar Chart) -->
+    <div class="col-md-8 mb-3 mb-md-0">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-header bg-white border-0 pt-4 px-4">
                 <h5 class="fw-bold"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Tren Mutasi Stok</h5>
             </div>
             <div class="card-body px-4 pb-4">
                 <div style="height: 300px; position: relative;">
                     <canvas id="inventoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kolom Kanan: Aset per Kategori (Doughnut Chart) -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold"><i class="bi bi-pie-chart text-success me-2"></i>Aset per Kategori</h5>
+            </div>
+            <div class="card-body px-4 pb-4 d-flex justify-content-center align-items-center">
+                <div style="height: 250px; width: 100%; position: relative;">
+                    <canvas id="categoryChart"></canvas>
                 </div>
             </div>
         </div>
@@ -168,7 +132,7 @@
                             <td>
                                 {% if item.stock <= 5 %}
                                     <span class="badge bg-danger shadow-sm"><i class="bi bi-exclamation-octagon"></i> {{ item.stock }} (Kritis)</span>
-                                {% elif item.stock <= item.low_stock_threshold %}
+                                {% elif item.stock <= 15 %}
                                     <span class="badge bg-warning text-dark shadow-sm"><i class="bi bi-exclamation-triangle"></i> {{ item.stock }}</span>
                                 {% else %}
                                     <span class="badge bg-success shadow-sm">{{ item.stock }}</span>
@@ -181,9 +145,6 @@
                                             data-bs-toggle="modal" data-bs-target="#modalTransaksi{{ item.id }}">
                                         <i class="bi bi-arrow-left-right"></i> Mutasi
                                     </button>
-                                    <a href="{% url 'item_detail' item.pk %}" class="btn btn-sm btn-white text-info border-end">
-                                        <i class="bi bi-info-circle"></i>
-                                    </a>
                                     <a href="{% url 'item_update' item.pk %}" class="btn btn-sm btn-white text-warning border-end">
                                         <i class="bi bi-pencil"></i>
                                     </a>
@@ -193,13 +154,25 @@
                                 </div>
                             </td>
                         </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-5">
+                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
+                                Belum ada data barang.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- /.table-responsive -->
 
-                        <div class="modal fade" id="modalTransaksi{{ item.id }}" tabindex="-1" aria-hidden="true">
+            <!-- Modal untuk setiap item -->
+            {% for item in page_obj %}
+            <div class="modal fade" id="modalTransaksi{{ item.id }}" tabindex="-1" aria-hidden="true">
                             <div class="modal-dialog modal-dialog-centered">
                                 <div class="modal-content border-0 shadow">
                                     <form action="{% url 'add_transaction' item.id %}" method="post">
                                         {% csrf_token %}
-                                        <input type="hidden" name="next" value="{{ request.get_full_path }}">
                                         <div class="modal-header border-0 pb-0">
                                             <h5 class="fw-bold">Mutasi Stok: {{ item.name }}</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -217,18 +190,8 @@
                                     </form>
                                 </div>
                             </div>
-                        </div>
-                        {% empty %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-5">
-                                <i class="bi bi-inbox fs-1 d-block mb-2 opacity-25"></i>
-                                Belum ada data barang.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            </div><!-- end /.modal -->
+            {% endfor %}
 
             {% if page_obj.has_other_pages %}
             <nav class="mt-4 no-print">
@@ -280,38 +243,77 @@
 </div>
 {% endblock %}
 
+
+<!-- Script untuk Chart.js -->
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    function renderChart() {
-        const ctx = document.getElementById('inventoryChart').getContext('2d');
+    function renderCharts() {
+        // 1. Render Bar Chart (Tren Mutasi)
+        const ctxMutasi = document.getElementById('inventoryChart').getContext('2d');
         fetch("{% url 'api_inventory_chart' %}")
             .then(response => response.json())
             .then(data => {
-                new Chart(ctx, {
-                    type: 'line',
+                new Chart(ctxMutasi, {
+                    type: 'bar',
                     data: data,
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } },
+                        plugins: { 
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        },
                         scales: {
-                            y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
-                            x: { grid: { display: false } }
+                            y: { 
+                                beginAtZero: true, 
+                                grid: { color: '#f0f0f0', borderDash: [5, 5] },
+                                border: { display: false }
+                            },
+                            x: { 
+                                grid: { display: false },
+                                border: { display: false }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
+                        }
+                    }
+                });
+            });
+
+        // 2. Render Doughnut Chart (Aset per Kategori)
+        const ctxCategory = document.getElementById('categoryChart').getContext('2d');
+        fetch("{% url 'api_asset_category_chart' %}") // Pastikan nama URL sesuai di urls.py
+            .then(response => response.json())
+            .then(data => {
+                new Chart(ctxCategory, {
+                    type: 'doughnut',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%', // Membuat lubang donat lebih tipis & elegan
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20
+                                }
+                            }
                         }
                     }
                 });
             });
     }
 
-    // Render pertama kali
-    document.addEventListener('DOMContentLoaded', renderChart);
-
-    // Re-render chart jika diperlukan setelah swap HTMX (opsional jika target hanya tabel)
-    document.body.addEventListener('htmx:afterOnLoad', function(evt) {
-        if (evt.detail.target.id === 'inventory-table-container') {
-            // Jika ada elemen di dalam tabel yang butuh JS ulang, taruh di sini
-        }
-    });
+    // Jalankan render grafik saat halaman siap
+    document.addEventListener('DOMContentLoaded', renderCharts);
 </script>
 {% endblock %}
