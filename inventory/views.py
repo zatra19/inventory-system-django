@@ -1,6 +1,6 @@
 ﻿import logging
 from functools import wraps
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -37,16 +37,14 @@ def get_user_role(user):
     if user.is_superuser:
         return 'admin'
 
-    admin_group, _ = Group.objects.get_or_create(name='Admin')
-    operator_group, _ = Group.objects.get_or_create(name='Operator')
-
     if user.groups.filter(name='Admin').exists():
         return 'admin'
+    if user.groups.filter(name='Manager').exists():
+        return 'manager'
     if user.groups.filter(name='Operator').exists():
         return 'operator'
 
-    user.groups.add(operator_group)
-    return 'operator'
+    return 'no_role'
 
 
 def role_required(*allowed_roles):
@@ -58,6 +56,9 @@ def role_required(*allowed_roles):
                 return redirect('login')
 
             role = get_user_role(request.user)
+            if role == 'no_role':
+                messages.error(request, 'Akun Anda belum memiliki peran. Hubungi administrator.')
+                return redirect('login')
             if role not in allowed_roles:
                 messages.error(request, 'Anda tidak memiliki izin untuk mengakses fitur ini.')
                 return redirect('item_list')
@@ -103,6 +104,7 @@ def send_low_stock_notification(request, item, previous_stock=None):
 
 
 @login_required
+@role_required('admin', 'manager', 'operator')
 def item_list(request):
     """
     Menampilkan daftar barang dengan fitur pencarian,
@@ -210,6 +212,7 @@ def item_delete(request, pk):
 
 
 @login_required
+@role_required('admin', 'manager', 'operator')
 def item_detail(request, pk):
     item = get_object_or_404(Item, pk=pk)
     transactions = item.transactions.select_related('user').order_by('-timestamp')
@@ -365,7 +368,9 @@ def export_items_excel(request):
     template.column_dimensions['C'].width = 30
 
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename="items.xlsx"'
+    sekarang = datetime.now()
+    tanggal_jam = sekarang.strftime('%d-%m-%Y-%H-%M')
+    response['Content-Disposition'] = f'attachment; filename="export-isp-{tanggal_jam}.xlsx"'
     workbook.save(response)
     return response
 
@@ -578,6 +583,7 @@ def import_items_excel(request):
 
 
 @login_required
+@role_required('admin', 'operator')
 def add_transaction(request, item_id):
     """
     Menangani mutasi stok (IN/OUT) dengan validasi ketersediaan stok.
@@ -617,6 +623,7 @@ def add_transaction(request, item_id):
 
 
 @login_required
+@role_required('admin', 'manager', 'operator')
 def transaction_history(request):
     """
     Menampilkan riwayat mutasi dengan filter tanggal.
@@ -644,6 +651,7 @@ def transaction_history(request):
 
 
 @login_required
+@role_required('admin', 'manager', 'operator')
 def export_transactions_csv(request):
     import csv
 
@@ -704,6 +712,17 @@ class InventoryChartData(APIView):
             data_in.append(in_qty)
             data_out.append(out_qty)
 
+        category_values = Item.objects.values('category__name').annotate(
+            total_value=Sum(F('stock') * F('price'))
+        ).order_by('-total_value')
+
+        category_labels = []
+        category_totals = []
+        for row in category_values:
+            total_value = row['total_value'] or 0
+            category_labels.append(row['category__name'] or 'Tanpa Kategori')
+            category_totals.append(float(total_value))
+
         return Response({
             'labels': labels,
             'datasets': [
@@ -724,4 +743,8 @@ class InventoryChartData(APIView):
                     'fill': True,
                 },
             ],
+            'category_summary': {
+                'labels': category_labels,
+                'values': category_totals,
+            },
         })

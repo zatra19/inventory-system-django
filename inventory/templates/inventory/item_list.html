@@ -110,8 +110,8 @@
 </div>
 {% endif %}
 
-<div class="row mb-4 no-print">
-    <div class="col-12">
+<div class="row mb-4 no-print g-3">
+    <div class="col-lg-8">
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-header bg-white border-0 pt-4 px-4">
                 <h5 class="fw-bold"><i class="bi bi-graph-up-arrow text-primary me-2"></i>Tren Mutasi Stok</h5>
@@ -119,6 +119,18 @@
             <div class="card-body px-4 pb-4">
                 <div style="height: 300px; position: relative;">
                     <canvas id="inventoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 pt-4 px-4">
+                <h5 class="fw-bold"><i class="bi bi-pie-chart text-success me-2"></i>Komposisi Nilai per Kategori</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="categoryChart"></canvas>
                 </div>
             </div>
         </div>
@@ -283,21 +295,100 @@
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    let inventoryLineChart = null;
+    let categoryDoughnutChart = null;
+
+    function formatRupiah(value) {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            maximumFractionDigits: 0
+        }).format(value || 0);
+    }
+
     function renderChart() {
-        const ctx = document.getElementById('inventoryChart').getContext('2d');
+        const inventoryCtx = document.getElementById('inventoryChart').getContext('2d');
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
         fetch("{% url 'api_inventory_chart' %}")
             .then(response => response.json())
             .then(data => {
-                new Chart(ctx, {
+                if (inventoryLineChart) {
+                    inventoryLineChart.destroy();
+                }
+                if (categoryDoughnutChart) {
+                    categoryDoughnutChart.destroy();
+                }
+
+                inventoryLineChart = new Chart(inventoryCtx, {
                     type: 'line',
                     data: data,
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
-                        plugins: { legend: { position: 'bottom' } },
+                        interaction: {
+                            mode: 'index',
+                            intersect: false
+                        },
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        return `Tanggal: ${context[0].label}`;
+                                    },
+                                    label: function(context) {
+                                        return `${context.dataset.label}: ${context.raw} unit`;
+                                    },
+                                    footer: function(context) {
+                                        const total = context.reduce((sum, item) => sum + Number(item.raw || 0), 0);
+                                        return `Total mutasi: ${total} unit`;
+                                    }
+                                }
+                            }
+                        },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#f0f0f0' } },
                             x: { grid: { display: false } }
+                        }
+                    }
+                });
+
+                const categoryLabels = (data.category_summary && data.category_summary.labels) || [];
+                const categoryValues = (data.category_summary && data.category_summary.values) || [];
+                const hasCategoryData = categoryLabels.length > 0 && categoryValues.length > 0;
+
+                const doughnutLabels = hasCategoryData ? categoryLabels : ['Belum ada data kategori'];
+                const doughnutValues = hasCategoryData ? categoryValues : [1];
+                const categoryColors = hasCategoryData
+                    ? ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6f42c1', '#0dcaf0', '#fd7e14', '#20c997', '#6c757d', '#6610f2']
+                    : ['#dee2e6'];
+
+                categoryDoughnutChart = new Chart(categoryCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: doughnutLabels,
+                        datasets: [{
+                            data: doughnutValues,
+                            backgroundColor: categoryColors,
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        if (!hasCategoryData) {
+                                            return 'Belum ada nominal kategori';
+                                        }
+                                        return `${context.label}: ${formatRupiah(context.raw)}`;
+                                    }
+                                }
+                            }
                         }
                     }
                 });

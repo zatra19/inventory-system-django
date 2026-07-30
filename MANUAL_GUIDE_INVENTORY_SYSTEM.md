@@ -18,23 +18,38 @@ Aplikasi ini digunakan untuk:
 
 ## 3. Hak Akses Pengguna
 
-Aplikasi ini mendukung mekanisme role-based access dengan dua peran utama:
+Aplikasi ini mendukung mekanisme role-based access dengan tiga peran utama. **Akun baru yang belum diberikan peran tidak dapat mengakses aplikasi** sampai administrator menetapkan peran secara manual.
 
 ### 3.1 Admin
-Admin memiliki akses penuh terhadap fitur berikut:
+Admin memiliki akses penuh terhadap seluruh fitur:
 - menambah, mengedit, dan menghapus barang,
 - mengelola kategori,
 - mengelola supplier,
 - melakukan impor dan ekspor Excel,
+- melakukan mutasi stok (masuk/keluar),
 - melihat dashboard dan riwayat mutasi,
-- mengatur batas stok rendah per item.
+- mengatur batas stok rendah per item,
+- mengekspor laporan mutasi ke CSV.
 
-### 3.2 Operator
-Operator memiliki akses terbatas untuk:
-- melihat data barang,
+### 3.2 Manager
+Manager berperan sebagai pengawas yang dapat memantau seluruh data tanpa mengubahnya:
+- melihat dashboard dan seluruh data barang,
+- melihat detail barang dan riwayat mutasi,
+- mengekspor laporan mutasi ke CSV.
+
+Manager **tidak dapat** melakukan mutasi stok, mengubah data barang, atau mengakses fitur impor/ekspor Excel.
+
+### 3.3 Operator
+Operator berperan sebagai petugas operasional harian:
+- melihat data barang dan dashboard,
 - melakukan mutasi stok (masuk/keluar),
 - melihat detail barang dan riwayat mutasi,
-- melihat dashboard dan informasi stok rendah.
+- mengekspor laporan mutasi ke CSV.
+
+Operator **tidak dapat** mengelola master data (barang, kategori, supplier) maupun mengakses fitur impor/ekspor Excel.
+
+### 3.4 Akun Tanpa Peran
+Akun yang belum ditetapkan perannya oleh administrator tidak dapat mengakses halaman apapun di aplikasi dan akan diarahkan kembali ke halaman login.
 
 ## 4. Persyaratan Sistem
 
@@ -289,6 +304,10 @@ User dapat melihat seluruh kegiatan mutasi stok dari menu Riwayat.
 - cek username dan password,
 - pastikan akun aktif,
 - hubungi admin jika akun belum diberikan akses.
+
+### 16.2 Tidak Bisa Mengakses Aplikasi Setelah Login
+- akun mungkin belum memiliki peran (Admin, Manager, atau Operator),
+- hubungi administrator untuk meminta penetapan peran melalui halaman Django Admin (`/admin/`) pada menu Groups.
 
 ### 16.2 Import Excel Gagal
 - cek format header,
